@@ -4,7 +4,9 @@ from action import Action
 import time
 import random
 import hashlib
+from pypushdeer import PushDeer
 
+pushdeer = PushDeer(pushkey="PDU15463TwaXIVKELKXUAdLKoQ741xDaNtYlJzgSO")
 app = Flask(__name__)
 ac = Action()
 
@@ -51,6 +53,27 @@ def submit():
         out = ''
         
     return (jsonify({'status': rcode, 'msg': 'message', 'result':res, 'output':out}),200,cors)
+
+@app.route('/feedback',methods=['POST','OPTIONS'])
+def feedback():
+    if request.method == 'OPTIONS':
+        return ('',200,cors)
+    data = request.get_json()
+    token = str(data['token'])
+
+    if not token_assert(token):
+        return (jsonify({'status': 3, 'msg': 'token error'}),401,cors)
+    
+    text = str(data['text'])
+    try:
+        pushdeer.send_text(text)
+        status = 0
+        msg = 'feedback success'
+    except Exception as e:
+        print(e)
+        status = 2
+        msg = str(e)
+    return (jsonify({'status':status, 'msg':msg}),200,cors)
     
 
 
