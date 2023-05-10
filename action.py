@@ -7,7 +7,7 @@ class Action:
     pass
 
   def run_(self,input:str, output:str, if_run:bool, args:str=''):
-    cmd = './assets/PASCC -d 2 -i ' + input + ' -o ' + output
+    cmd = './assets/PASCC/bin/PASCC -d 2 -i ' + input + ' -o ' + output
 
     if if_run:
       cmd += ' -t '
@@ -24,11 +24,24 @@ class Action:
       out = ''
       err = 'subprocess.TimeoutExpired'
       status = 2
+    except Exception as e:
+      out = str(e)
+      status = 1
 
     date = datetime.datetime.now().strftime('%Y%m%d')
 
     with open('./logs/' + date + '.log','a+') as f:
       f.write(out)
+      try:
+        with open(input,'r') as fr:
+          source = fr.read()
+          f.write('================================\n')
+          f.write(source)
+          f.write('================================\n\n')
+          fr.close()
+        f.close()
+      except Exception:
+        pass
 
     return status,err
 
@@ -42,14 +55,12 @@ class Action:
     with open(input,'w') as f:
       f.write(source)
     
-    status,err = self.run_(input,output,run_flag,'> ' + result)
+    status,err = self.run_(input,'./tmp/' + token,run_flag,'> ' + result)
     c_code = 'Internal Error.'
     run_res = ''
 
     if status == 2:
       c_code = 'program running exceed 3 seconds.'
-    elif status == 1:
-      c_code=str(err)
     elif status == 0:
       if run_flag:
         with open(result,'r') as f: run_res = f.read()
@@ -57,6 +68,8 @@ class Action:
 
       with open(output,'r') as f: c_code = f.read()
       os.remove(output)
+    else:
+      c_code = str(err)
 
       
       

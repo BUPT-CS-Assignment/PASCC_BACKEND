@@ -1,3 +1,2 @@
-chmod 777 assets;
-chmod 777 assets/*;
+chmod 777 assets/PASCC/bin/PASCC;
 python main.py
